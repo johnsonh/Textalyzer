@@ -27,7 +27,6 @@ import android.widget.TextView;
 public class DetailActivity extends TextalyzerActivity implements OnItemClickListener, OnClickListener
 {
 	private TextView scoreHeaderTextView;
-	private TextView scoreValueTextView;
 	private TextView hideHeaderTextView;
 	private TextView hideSubTextView;
 	private BounceListView informationListView;
@@ -66,9 +65,6 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 		int ratioRight = 100 - ratioLeft;
 		String ratio = ratioLeft + ":" + ratioRight;
 		
-		//scoreValueTextView.setText(ratio);
-		scoreValueTextView.setText("");		
-		Log.d("Royyy",""+contactHolder.getFriendshipRatio());
 		if (contactHolder.getFriendshipRatio() < 0.44) 
 		{
 			hideSubTextView.setText("\"Friendship requires great communication.\"\n - Saint Francis de Sales");
@@ -92,7 +88,6 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 	private void grabAllViews()
 	{
 		scoreHeaderTextView = (TextView)findViewById(R.id.score_header);
-		scoreValueTextView = (TextView)findViewById(R.id.score_value);
 		hideHeaderTextView = (TextView)findViewById(R.id.hide_header);
 		hideSubTextView = (TextView)findViewById(R.id.hide_sub);
 		informationListView = (BounceListView)findViewById(R.id.list_information);
@@ -284,8 +279,6 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 			{
 				scoreHeaderTextView.setVisibility(View.INVISIBLE);
 				scoreHeaderTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_short));
-				scoreValueTextView.setVisibility(View.INVISIBLE);
-				scoreValueTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_short));
 				hideHeaderTextView.setVisibility(View.VISIBLE);
 				hideHeaderTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_short));
 				hideSubTextView.setVisibility(View.VISIBLE);
@@ -295,8 +288,6 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 			{
 				scoreHeaderTextView.setVisibility(View.VISIBLE);
 				scoreHeaderTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_short));
-				scoreValueTextView.setVisibility(View.VISIBLE);
-				scoreValueTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_short));
 				hideHeaderTextView.setVisibility(View.INVISIBLE);
 				hideHeaderTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out_short));
 				hideSubTextView.setVisibility(View.INVISIBLE);

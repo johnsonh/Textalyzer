@@ -32,9 +32,9 @@
 	/>
 	<TextView
 	    android:id="@+id/tagline"
-	    android:layout_width="wrap_content"
+	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:layout_gravity="center"
+	    android:gravity="center"
 	    android:textSize="16sp"
 	    android:text="No data from your phone is collected. All calculations are done locally without an internet connection."
 	/>
@@ -42,7 +42,7 @@
 	    android:id="@+id/open_source"
 	    android:layout_width="match_parent"
 	    android:layout_height="72dp"
-	    android:layout_gravity="center"
+	    android:gravity="center"
 	    android:text="Open Source&#10;Licenses"
 	    android:textSize="24sp"
 	    style="?android:attr/borderlessButtonStyle"
