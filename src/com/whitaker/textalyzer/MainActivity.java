@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.whitaker.textalyzer.TextMessage.Directions;
 import com.whitaker.textalyzer.util.BounceListView;
+import com.whitaker.textalyzer.util.TextalyzerApplication;
 import com.whitaker_iacob.textalyzer.R;
 
 import android.app.Activity;
@@ -45,7 +46,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 {
 	private BounceListView contactListView;
 	private RelativeLayout generalLayout;
-	public static HashMap<String, ContactHolder> contactMap;
 	private HashMap<String, String> nameMap;
 	private ContactsAdapter contactAdapter;
 	
@@ -70,7 +70,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		TextView abTV = (TextView)findViewById(titleId);
 		abTV.setTextColor(Color.WHITE);
 		
-		contactMap = new HashMap<String, ContactHolder>();
+		TextalyzerApplication app = (TextalyzerApplication) this.getApplication();
+		
 		nameMap = new HashMap<String, String>();
 		
 		Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
@@ -97,7 +98,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 			
 			address = addressClipper(address);
 			
-			if(contactMap.get(address) == null)
+			if(app.getContact(address) == null)
 			{
 				String name = nameMap.get(address);
 				if(name == null)
@@ -119,7 +120,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 				holder.incomingTextCount++;
 				holder.addInstruction(this.getString(R.string.info_pre_count), getString(R.string.info_pre_in) + holder.incomingTextCount, null);
 				
-				contactMap.put(address, holder);
+				app.putContact(address, holder);
 				long date = cursor.getLong(cursor.getColumnIndex("date"));
 				TextMessage message = new TextMessage(Directions.INBOUND, body, date);
 				holder.textMessages.add(message);
@@ -127,7 +128,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 			}
 			else
 			{
-				ContactHolder holder = contactMap.get(address);
+				ContactHolder holder = app.getContact(address);
 				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
 				
 				determineWordFrequency(body, Directions.INBOUND, holder);
@@ -156,7 +157,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 				continue;
 			address = addressClipper(address);
 
-			ContactHolder holder = contactMap.get(address);
+			ContactHolder holder = app.getContact(address);
 			if(holder != null)
 			{
 				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
@@ -173,14 +174,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		} while(cursor.moveToNext());
 		cursor.close();
 		
-		for (String contactString: contactMap.keySet())
+		for (String contactString: app.getKeySet())
 		{
-			contactMap.get(contactString).analyze(getCtx());
+			app.getContact(contactString).analyze(getCtx());
 		}
 		
 		grabAllViews();
 		
-		contactAdapter = new ContactsAdapter(contactMap);
+		contactAdapter = new ContactsAdapter();
 		contactListView.setAdapter(contactAdapter);
 		contactListView.setOnItemClickListener(this);
 		generalLayout.setOnClickListener(this);
@@ -260,14 +261,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 	private class ContactsAdapter extends BaseAdapter
 	{
 		private ArrayList<ContactHolder> contactList;
+		private TextalyzerApplication app = (TextalyzerApplication) getCtx().getApplication();
 		
 		@SuppressWarnings("unchecked")
-		public ContactsAdapter(HashMap<String, ContactHolder> map)
+		public ContactsAdapter()
 		{
 			contactList = new ArrayList<ContactHolder>();
-			for (String contactString: contactMap.keySet())
+			for (String contactString: app.getKeySet())
 			{
-					contactList.add(contactMap.get(contactString));
+					contactList.add(app.getContact(contactString));
 			}
 			Collections.sort(contactList, new ContactHolder.ContactComparator());
 		}
@@ -275,7 +277,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		@Override
 		public int getCount() 
 		{
-			return contactMap.size();
+			return contactList.size();
 		}
 
 		@Override
@@ -303,7 +305,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 			TextView nameText = (TextView)itemView.findViewById(R.id.contact_item_name);
 			TextView countText = (TextView)itemView.findViewById(R.id.contact_item_total);
 			
-			if(position < contactMap.size())
+			if(position < contactList.size())
 			{
 				ContactHolder holder = (ContactHolder)this.getItem(position);
 				nameText.setText(holder.personName);
@@ -328,17 +330,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		return this;
 	}
 	
-	public static ContactHolder getContactHolder(String address)
-	{
-		return contactMap.get(address);
-	}
-
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
 	{
 		if(parent == contactListView)
 		{
-			if(position < contactMap.size())
+			if(position < contactListView.getAdapter().getCount())
 			{				
 				ContactHolder contact = (ContactHolder)contactListView.getAdapter().getItem(position);
 				Intent intent = new Intent(getCtx(), DetailActivity.class);

@@ -4,6 +4,7 @@ import com.whitaker.textalyzer.ContactHolder.InstructionHolder;
 import com.whitaker.textalyzer.TextMessage.Directions;
 import com.whitaker.textalyzer.util.BounceListView;
 import com.whitaker.textalyzer.util.TextalyzerActivity;
+import com.whitaker.textalyzer.util.TextalyzerApplication;
 import com.whitaker_iacob.textalyzer.R;
 
 import android.app.Activity;
@@ -45,7 +46,8 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 		String address = b.getString("address");
 		grabAllViews();
 		
-		contactHolder = MainActivity.getContactHolder(address);
+		TextalyzerApplication app = (TextalyzerApplication)this.getApplication();
+		contactHolder = app.getContact(address);
 		
 		Integer outgoing = 0;
 		Integer incoming = 0;

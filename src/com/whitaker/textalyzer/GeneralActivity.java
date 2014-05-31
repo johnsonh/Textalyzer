@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import com.whitaker.textalyzer.util.BounceListView;
 import com.whitaker.textalyzer.util.TextalyzerActivity;
+import com.whitaker.textalyzer.util.TextalyzerApplication;
 import com.whitaker_iacob.textalyzer.R;
 
 import android.app.Activity;
@@ -23,8 +24,6 @@ import android.widget.TextView;
 public class GeneralActivity extends TextalyzerActivity
 {
 	private BounceListView itemListView;
-	
-	private static HashMap<String, ContactHolder> contactMap = MainActivity.contactMap;
 	
 	private int totalIncomingTexts = 0;
 	private int totalOutgoingTexts = 0;
@@ -62,14 +61,16 @@ public class GeneralActivity extends TextalyzerActivity
 		this.setContentView(R.layout.general_stats);		
 		grabAllViews();
 		
+		TextalyzerApplication app = (TextalyzerApplication)this.getApplication();
+		
 		adapterInstructions = new ArrayList<String>();
 		
 		int leastFavoriteContactForYouCount = 0;
 		int leastFavoriteContactForThemCount = 0;
 		
-		for (String key: contactMap.keySet())
+		for (String key: app.getKeySet())
 		{
-			ContactHolder c = contactMap.get(key);
+			ContactHolder c = app.getContact(key);
 			totalIncomingTexts += c.incomingTextCount;
 			totalOutgoingTexts += c.outgoingTextCount;
 			
