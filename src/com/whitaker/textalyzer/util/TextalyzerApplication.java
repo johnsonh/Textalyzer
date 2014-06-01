@@ -11,8 +11,12 @@ import android.app.Application;
 
 public class TextalyzerApplication extends Application
 {
-	private Map<String, ContactHolder> contacts = new HashMap<String, ContactHolder>();
+	private Map<String, ContactHolder> contacts;
 	
+	public void initMap()
+	{
+		contacts = new HashMap<String, ContactHolder>();
+	}
 	public void putContact(String address, ContactHolder holder)
 	{
 		contacts.put(address, holder);

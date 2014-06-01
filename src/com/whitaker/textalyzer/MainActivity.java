@@ -71,6 +71,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		abTV.setTextColor(Color.WHITE);
 		
 		TextalyzerApplication app = (TextalyzerApplication) this.getApplication();
+		app.initMap();
 		
 		nameMap = new HashMap<String, String>();
 		
