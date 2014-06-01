@@ -1,5 +1,6 @@
 package com.whitaker.textalyzer;
 
+import com.whitaker.textalyzer.util.TextalyzerApplication;
 import com.whitaker_iacob.textalyzer.R;
 
 import android.app.Activity;
@@ -9,7 +10,7 @@ import android.os.Handler;
 
 public class SplashScreenActivity extends Activity 
 {
-    private final int SPLASH_DISPLAY_LENGTH = 400;
+    private final int SPLASH_DISPLAY_LENGTH = 100;
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -21,6 +22,10 @@ public class SplashScreenActivity extends Activity
         {
             public void run()
             {
+            	TextalyzerApplication app = (TextalyzerApplication) SplashScreenActivity.this.getApplication();
+            	app.initMap();
+            	app.populateMap();
+
                 Intent mainIntent = new Intent(SplashScreenActivity.this, MainActivity.class);
                 SplashScreenActivity.this.startActivity(mainIntent);
                 SplashScreenActivity.this.finish();

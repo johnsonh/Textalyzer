@@ -46,19 +46,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 {
 	private BounceListView contactListView;
 	private RelativeLayout generalLayout;
-	private HashMap<String, String> nameMap;
 	private ContactsAdapter contactAdapter;
 	
-	private static ArrayList<Date> timesReceived = new ArrayList<Date> ();
-	private static ArrayList<Date> timesSent = new ArrayList<Date> ();
 	
 	public static final int ONE_HOUR = 60 * 60 * 1000;
-	private final String [] boringWords = {"the","be","and","of","a","in","to","have","it","it's","i","i'm","im","ok","for","you","he","with","on","do","say",
-			"this","they","at","but","we","his","from","that","not","n't","by","she","or","what","was","go","their","can","who","get","is",
-			"if","would","her","all","my","make","about","know","will","as","up","one","there","year","so","think","when","which","them","that's","did",
-			"some","me","people","take","out","into","just","see","him","your","come","could","now","than","like","other","how","then","its",
-			"our","two","these","want","way","look","first","also","new","because","day","more","use","no","find","here","thing","give",
-			"many","are","a","e","o","u","b","c","d"};
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
@@ -70,114 +62,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		TextView abTV = (TextView)findViewById(titleId);
 		abTV.setTextColor(Color.WHITE);
 		
-		TextalyzerApplication app = (TextalyzerApplication) this.getApplication();
-		app.initMap();
-		
-		nameMap = new HashMap<String, String>();
-		
-		Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
-		while (phones.moveToNext())
+		TextalyzerApplication app = (TextalyzerApplication)this.getApplication();
+		if(!app.isReady())
 		{
-			String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-			phoneNumber = addressClipper(phoneNumber);
-			String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-			nameMap.put(phoneNumber, name);
-		}
-		phones.close();
-		
-		Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
-		cursor.moveToFirst();
-		do
-		{
-			if(cursor.getCount() == 0)
-				continue;
-			
-			//Each message is a separate while loop call
-			String address = cursor.getString(cursor.getColumnIndex("address"));
-			if(address == null)
-				continue;
-			
-			address = addressClipper(address);
-			
-			if(app.getContact(address) == null)
-			{
-				String name = nameMap.get(address);
-				if(name == null)
-					continue;
-				
-				ContactHolder holder = new ContactHolder();
-				holder.personName = name;
-				holder.phoneNumber = address;
-
-				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
-				
-				if(body == null)
-					continue;
-
-				holder.textReceivedLength += body.length(); 
-				
-				determineWordFrequency(body, Directions.INBOUND, holder);
-				
-				holder.incomingTextCount++;
-				holder.addInstruction(this.getString(R.string.info_pre_count), getString(R.string.info_pre_in) + holder.incomingTextCount, null);
-				
-				app.putContact(address, holder);
-				long date = cursor.getLong(cursor.getColumnIndex("date"));
-				TextMessage message = new TextMessage(Directions.INBOUND, body, date);
-				holder.textMessages.add(message);
-				timesReceived.add(new Date(date));
-			}
-			else
-			{
-				ContactHolder holder = app.getContact(address);
-				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
-				
-				determineWordFrequency(body, Directions.INBOUND, holder);
-				holder.textReceivedLength += body.length(); 
-				holder.incomingTextCount++;
-				holder.addInstruction(getString(R.string.info_pre_count), getString(R.string.info_pre_in) + holder.incomingTextCount, null);
-				long date = cursor.getLong(cursor.getColumnIndex("date"));
-				TextMessage message = new TextMessage(Directions.INBOUND, body, date);
-				holder.textMessages.add(message);
-				timesReceived.add(new Date(date));
-			}
-			
-		}while(cursor.moveToNext());
-		cursor.close();
-		
-		cursor = getContentResolver().query(Uri.parse("content://sms/sent"), null, null, null, null);
-		cursor.moveToFirst();
-		do
-		{
-			if(cursor.getCount() == 0)
-				continue;
-			
-			String address = cursor.getString(cursor.getColumnIndex("address"));
-			
-			if(address == null)
-				continue;
-			address = addressClipper(address);
-
-			ContactHolder holder = app.getContact(address);
-			if(holder != null)
-			{
-				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
-				determineWordFrequency(body, Directions.OUTBOUND, holder);
-				holder.textSentLength += body.length(); 
-				holder.outgoingTextCount++;
-				holder.addInstruction(getString(R.string.info_pre_count), null, getString(R.string.info_pre_out) + holder.outgoingTextCount);
-				long date = cursor.getLong(cursor.getColumnIndex("date"));
-				TextMessage message = new TextMessage(Directions.OUTBOUND, body, date);
-				holder.textMessages.add(message);
-				timesSent.add(new Date(date));
-			}
-			
-		} while(cursor.moveToNext());
-		cursor.close();
-		
-		for (String contactString: app.getKeySet())
-		{
-			app.getContact(contactString).analyze(getCtx());
+			app.initMap();
+			app.populateMap();
 		}
 		
 		grabAllViews();
@@ -217,47 +106,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		generalLayout = (RelativeLayout)findViewById(R.id.general_relative);
 	}
 	
-	public void determineWordFrequency (String body, Directions direction, ContactHolder holder)
-	{
-		String [] words = body.replaceAll("[!?,]", "").split("\\s+"); //remove punctuation and split by whitespace(s)
-		if (direction == Directions.OUTBOUND)
-		{
-			for (String word: words)
-			{
-				if (!Arrays.asList(boringWords).contains(word))
-				{
-			        Integer frequency = holder.outgoingWordFrequency.get(word); //Must use wrapper to utilize null below
-			        if (frequency == null)
-			        {
-			        	holder.outgoingWordFrequency.put(word,1);	
-			        } 
-			        else 
-			        {
-			        	holder.outgoingWordFrequency.put(word,frequency.intValue() + 1);
-			        }
-				}
-			}
-		} 
-		else if(direction == Directions.INBOUND)
-		{
-			for (String word: words)
-			{
-				if (!Arrays.asList(boringWords).contains(word))
-				{
-			        Integer frequency = holder.incomingWordFrequency.get(word); //Must use wrapper to utilize null below
-			        if (frequency == null)
-			        {
-			        	holder.incomingWordFrequency.put(word,1);	
-			        } 
-			        else 
-			        {
-			        	holder.incomingWordFrequency.put(word,frequency.intValue() + 1);
-			        }
-				}
-			}
-			
-		}
-	}
+
 	
 	private class ContactsAdapter extends BaseAdapter
 	{
@@ -316,15 +165,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnCli
 		}
 	}
 	
-	private String addressClipper(String address)
-	{
-		if(address.contains("+1"))
-		{
-			address = address.substring(2);
-		}
-		address = address.replace(" ", "").replace("(", "").replace(")", "").replace("-", "");
-		return address;
-	}
+
 	
 	private Activity getCtx()
 	{

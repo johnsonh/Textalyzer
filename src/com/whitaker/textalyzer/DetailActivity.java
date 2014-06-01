@@ -47,6 +47,11 @@ public class DetailActivity extends TextalyzerActivity implements OnItemClickLis
 		grabAllViews();
 		
 		TextalyzerApplication app = (TextalyzerApplication)this.getApplication();
+		if(!app.isReady())
+		{
+			app.initMap();
+			app.populateMap();
+		}
 		contactHolder = app.getContact(address);
 		
 		Integer outgoing = 0;

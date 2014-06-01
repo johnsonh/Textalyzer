@@ -62,6 +62,11 @@ public class GeneralActivity extends TextalyzerActivity
 		grabAllViews();
 		
 		TextalyzerApplication app = (TextalyzerApplication)this.getApplication();
+		if(!app.isReady())
+		{
+			app.initMap();
+			app.populateMap();
+		}
 		
 		adapterInstructions = new ArrayList<String>();
 		
