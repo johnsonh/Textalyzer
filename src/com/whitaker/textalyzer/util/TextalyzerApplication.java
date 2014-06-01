@@ -25,7 +25,7 @@ public class TextalyzerApplication extends Application
 			"if","would","her","all","my","make","about","know","will","as","up","one","there","year","so","think","when","which","them","that's","did",
 			"some","me","people","take","out","into","just","see","him","your","come","could","now","than","like","other","how","then","its",
 			"our","two","these","want","way","look","first","also","new","because","day","more","use","no","find","here","thing","give",
-			"many","are","a","e","o","u","b","c","d"};
+			"many","are","a","e","o","u","b","c","d", "&", "yeah", "don't", "dont", "i'll"};
 	
 	private Map<String, ContactHolder> contacts;
 	private List<Date> timesReceived;
@@ -103,7 +103,12 @@ public class TextalyzerApplication extends Application
 				holder.personName = name;
 				holder.phoneNumber = address;
 
-				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
+				int index = cursor.getColumnIndex("body");
+				if(index == -1)
+				{
+					continue;
+				}
+				String body = cursor.getString(index).toLowerCase();
 				
 				if(body == null)
 					continue;
@@ -124,7 +129,15 @@ public class TextalyzerApplication extends Application
 			else
 			{
 				ContactHolder holder = getContact(address);
+				int index = cursor.getColumnIndex("body");
+				if(index == -1)
+				{
+					continue;
+				}
 				String body = cursor.getString(cursor.getColumnIndex("body")).toLowerCase();
+				
+				if(body == null)
+					continue;
 				
 				determineWordFrequency(body, Directions.INBOUND, holder);
 				holder.textReceivedLength += body.length(); 
